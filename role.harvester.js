@@ -15,17 +15,51 @@ var roleHarvester = {
                 {
                     //go to the source
                     creep.moveByPath(Room.deserializePath(creep.memory.sourcePath));
+                    creep.say('✈ onwards!')
+                }
+                else
+                {
+                    //check if a container id is stored in memory
+                    if(creep.memory.containerID)
+                    {
+                        //repair the container if it is damaged
+                        if(creep.memory.containerID.hits < creep.memory.containerID.hitsMax)
+                        {
+                            creep.repair(creep.memory.containerID);
+                            creep.say('🛠 repairing!');
+                        }
+                        else
+                        {
+                            creep.say('⛏ harvesting!');
+                        }
+                    }
+                    else
+                    {
+                        //check for a container below
+                        var containers = creep.room.find(FIND_STRUCTURES, {
+                            filter: (s) => {
+                                return s.structureType === STRUCTURE_CONTAINER;
+                            }
+                        });
+                        for(var c = 0; c < containers.length; c++)
+                        {
+                            if(creep.pos === containers[c].pos)
+                            {
+                                //if there is one, set it as the container id in memory
+                                creep.memory.containerID = containers[c];
+                                creep.say('container stored!');
+                            }
+                        }
+                    }
                 }
                 //keep mining for the rest of your life
                 //just drop excess resource below you
-
-                //TODO: AUTO-REPAIR CONTAINER BELOW HARVESTER
-                //heal the container below you with the internal energy, if there is a container
             }
             else
             {
                 //create a path to the source, store it in memory
                 creep.memory.sourcePath = Room.serializePath(creep.pos.findClosestByPath(creep.memory.sourceID));
+                creep.say('path stored!');
             }
         }
         else
@@ -46,9 +80,12 @@ var roleHarvester = {
                             {
                                 //if there's an available source, snatch it
                                 creep.memory.sourceID = sources[s];
+                                creep.say('source stored!');
                             }
-                            //there should never be a harvester without a source because the max harvesters should be
-                            //the number of sources
+                            /*
+                            there should never be a harvester without a source because the max harvesters should be
+                            the number of sources
+                            */
                         }
                     }
                 }
